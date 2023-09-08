@@ -10,9 +10,6 @@ import { GlobalStyle } from 'components/GlobalStyle';
 import { Layout } from 'components/Layout';
 import { MainTitle, Title, Message } from './App.styled';
 
-// пропустити 1ий рендер??
-// useMemo
-
 const CONTACTS_LS_KEY = 'contacts';
 const getInitialContacts = () => {
   const savedContacts = localStorage.getItem(CONTACTS_LS_KEY);
