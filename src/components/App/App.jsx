@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { nanoid } from 'nanoid';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -8,31 +8,28 @@ import { ContactFilter } from 'components/ContactFilter/ContactFilter';
 
 import { GlobalStyle } from 'components/GlobalStyle';
 import { Layout } from 'components/Layout';
-import { MainTitle, Title } from './App.styled';
+import { MainTitle, Title, Message } from './App.styled';
+
+// пропустити 1ий рендер??
+// useMemo
 
 const CONTACTS_LS_KEY = 'contacts';
+const getInitialContacts = () => {
+  const savedContacts = localStorage.getItem(CONTACTS_LS_KEY);
+  return JSON.parse(savedContacts) ?? [];
+};
 
-export class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
+export function App() {
+  const [contacts, setContacts] = useState(getInitialContacts);
+  const [filter, setFilter] = useState('');
 
-  componentDidMount() {
-    const savedContacts = localStorage.getItem(CONTACTS_LS_KEY);
-    if (savedContacts !== null)
-      this.setState({ contacts: JSON.parse(savedContacts) });
-  }
+  useEffect(() => {
+    localStorage.setItem(CONTACTS_LS_KEY, JSON.stringify(contacts));
+  }, [contacts]);
 
-  componentDidUpdate(_, prevState) {
-    const currentContacts = this.state.contacts;
-    if (currentContacts !== prevState.contacts)
-      localStorage.setItem(CONTACTS_LS_KEY, JSON.stringify(currentContacts));
-  }
-
-  handleFormSubmit = newContact => {
-    const isNameInContactList = this.checkContactName(newContact.name);
-    const isNumberInContactList = this.checkContactNumber(newContact.number);
+  const handleFormSubmit = newContact => {
+    const isNameInContactList = checkContactName(newContact.name);
+    const isNumberInContactList = checkContactNumber(newContact.number);
 
     if (isNameInContactList) {
       toast.error(`${newContact.name} is already in contacts`);
@@ -41,59 +38,56 @@ export class App extends Component {
         `This number is already saved in contacts as ${isNumberInContactList.name}`
       );
     } else {
-      this.setState(prevState => ({
-        contacts: [...prevState.contacts, { id: nanoid(), ...newContact }],
-      }));
+      setContacts(state => {
+        return [...state, { id: nanoid(), ...newContact }];
+      });
     }
   };
 
-  checkContactName = name => {
-    return this.state.contacts.find(
+  const changeNameFilter = name => setFilter(name);
+
+  const deleteContacts = contactId => {
+    setContacts(state => state.filter(contact => contact.id !== contactId));
+  };
+
+  const checkContactName = name => {
+    return contacts.find(
       contact => contact.name.toLowerCase() === name.trim().toLowerCase()
     );
   };
 
-  checkContactNumber = number => {
+  const checkContactNumber = number => {
     const regex = /\D/g;
-    return this.state.contacts.find(
+    return contacts.find(
       contact =>
         contact.number.replace(regex, '') === number.trim().replace(regex, '')
     );
   };
 
-  changeNameFilter = name => {
-    this.setState({ filter: name });
-  };
-
-  getFilteredContacts = () => {
-    const { contacts, filter } = this.state;
+  const visibleContacts = useMemo(() => {
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(filter.toLowerCase())
     );
-  };
+  }, [contacts, filter]);
 
-  deleteContacts = contactId => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
-    }));
-  };
+  return (
+    <Layout>
+      <MainTitle>Phonebook</MainTitle>
+      <ContactForm onFormSubmit={handleFormSubmit} />
+      <Title>Contacts</Title>
+      <ContactFilter onFilterNameChange={changeNameFilter} />
 
-  render() {
-    const visibleContacts = this.getFilteredContacts();
-    return (
-      <Layout>
-        <MainTitle>Phonebook</MainTitle>
-        <ContactForm onFormSubmit={this.handleFormSubmit} />
-
-        <Title>Contacts</Title>
-        <ContactFilter onFilterNameChange={this.changeNameFilter} />
+      {contacts.length > 0 ? (
         <ContactList
           contacts={visibleContacts}
-          onContactsDelete={this.deleteContacts}
+          onContactsDelete={deleteContacts}
         />
-        <Toaster />
-        <GlobalStyle />
-      </Layout>
-    );
-  }
+      ) : (
+        <Message>No contacts found</Message>
+      )}
+
+      <Toaster />
+      <GlobalStyle />
+    </Layout>
+  );
 }

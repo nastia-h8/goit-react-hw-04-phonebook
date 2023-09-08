@@ -13,7 +13,6 @@ export function ContactFilter({ onFilterNameChange }) {
       <label>
         <LabelName>Find contacts by name</LabelName>
         <InputWrapper>
-          <AiOutlineSearch size={20} />
           <Input
             name="filter"
             placeholder="Enter name..."
@@ -22,6 +21,7 @@ export function ContactFilter({ onFilterNameChange }) {
               onFilterNameChange(e.target.value);
             }}
           />
+          <AiOutlineSearch size={20} />
         </InputWrapper>
       </label>
     </Wrapper>

@@ -48,8 +48,3 @@ export const Button = styled.button`
     background-color: ${p => p.theme.colors.bgc};
   }
 `;
-
-export const Message = styled.p`
-  text-align: center;
-  font-weight: bold;
-`;

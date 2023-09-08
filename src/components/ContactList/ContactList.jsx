@@ -1,16 +1,9 @@
 import PropTypes from 'prop-types';
 import { AiOutlineDelete } from 'react-icons/ai';
-import {
-  List,
-  Item,
-  Name,
-  Button,
-  NumberWrapper,
-  Message,
-} from './ContactList.styled';
+import { List, Item, Name, Button, NumberWrapper } from './ContactList.styled';
 
 export function ContactList({ contacts, onContactsDelete }) {
-  return contacts.length > 0 ? (
+  return (
     <List>
       {contacts.map(({ id, name, number }) => (
         <Item key={id}>
@@ -30,8 +23,6 @@ export function ContactList({ contacts, onContactsDelete }) {
         </Item>
       ))}
     </List>
-  ) : (
-    <Message>No contacts found</Message>
   );
 }
 
